@@ -1,0 +1,243 @@
+
+<h2 class="sr-only">Breakfast Wine Club registration dashboard showing 17 registrants across 14 sessions from June to September 2026.</h2>
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.section-label { font-size: 12px; color: var(--color-text-secondary); text-transform: none; letter-spacing: 0.03em; margin-bottom: 8px; }
+.metric-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 1rem; }
+.metric-val { font-size: 26px; font-weight: 500; color: var(--color-text-primary); }
+.metric-label { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; }
+.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 500; }
+.badge-sommelier { background: #EEEDFE; color: #3C3489; }
+.badge-muggle { background: #E1F5EE; color: #085041; }
+.badge-educator { background: #FAEEDA; color: #633806; }
+@media (prefers-color-scheme: dark) {
+  .badge-sommelier { background: #3C3489; color: #CECBF6; }
+  .badge-muggle { background: #085041; color: #9FE1CB; }
+  .badge-educator { background: #633806; color: #FAC775; }
+}
+.avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; }
+.person-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.person-row:last-child { border-bottom: none; }
+.session-bar { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.session-bar:last-child { border-bottom: none; }
+.bar-track { flex: 1; background: var(--color-background-secondary); border-radius: 99px; height: 8px; overflow: hidden; }
+.bar-fill { height: 8px; border-radius: 99px; }
+.tab-btn { padding: 6px 14px; font-size: 13px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: transparent; color: var(--color-text-secondary); cursor: pointer; }
+.tab-btn.active { background: var(--color-background-secondary); color: var(--color-text-primary); font-weight: 500; }
+</style>
+
+<div style="padding: 1rem 0 2rem;">
+
+  <!-- Metrics -->
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem;">
+    <div class="metric-card">
+      <div class="metric-val">17</div>
+      <div class="metric-label">Total registrants</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val">14</div>
+      <div class="metric-label">Sessions selected</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val">9</div>
+      <div class="metric-label">Newsletter subs</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val">6</div>
+      <div class="metric-label">Trade / educators</div>
+    </div>
+  </div>
+
+  <!-- Session popularity -->
+  <div class="card" style="margin-bottom: 1rem;">
+    <p class="section-label" style="margin-bottom: 12px;"><i class="ti ti-chart-bar" aria-hidden="true" style="font-size:14px; vertical-align:-1px; margin-right:4px;"></i>Sign-ups per session</p>
+    <div id="session-bars"></div>
+  </div>
+
+  <!-- Two columns: attendees + breakdown -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+
+    <!-- Registrant list -->
+    <div class="card" style="overflow: hidden;">
+      <p class="section-label" style="margin-bottom: 8px;"><i class="ti ti-users" aria-hidden="true" style="font-size:14px; vertical-align:-1px; margin-right:4px;"></i>Registrants</p>
+      <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 10px; display:flex; gap: 8px; flex-wrap: wrap;">
+        <span id="f-all" class="tab-btn active" onclick="filterPeople('all')">All</span>
+        <span id="f-sommelier" class="tab-btn" onclick="filterPeople('sommelier')">Trade</span>
+        <span id="f-muggle" class="tab-btn" onclick="filterPeople('muggle')">Muggle</span>
+      </div>
+      <div id="people-list"></div>
+    </div>
+
+    <!-- Breakdown charts -->
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+      <div class="card">
+        <p class="section-label" style="margin-bottom: 8px;"><i class="ti ti-users-group" aria-hidden="true" style="font-size:14px; vertical-align:-1px; margin-right:4px;"></i>Occupation mix</p>
+        <div style="position: relative; height: 160px;"><canvas id="occChart" role="img" aria-label="Donut chart of occupation mix: 11 Muggle, 4 Sommelier, 2 Educator">Muggle: 11, Sommelier: 4, Educator: 2</canvas></div>
+        <div id="occ-legend" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; font-size: 12px; color: var(--color-text-secondary);"></div>
+      </div>
+      <div class="card">
+        <p class="section-label" style="margin-bottom: 8px;"><i class="ti ti-certificate" aria-hidden="true" style="font-size:14px; vertical-align:-1px; margin-right:4px;"></i>Qualification level</p>
+        <div style="position: relative; height: 160px;"><canvas id="qualChart" role="img" aria-label="Bar chart of qualification levels among registrants">NONE: 8, WSET 2/3: 5, CMS: 3, Other: 1</canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Multi-session bookers -->
+  <div class="card">
+    <p class="section-label" style="margin-bottom: 10px;"><i class="ti ti-star" aria-hidden="true" style="font-size:14px; vertical-align:-1px; margin-right:4px;"></i>Most committed members (3+ sessions)</p>
+    <div id="power-users"></div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const people = [
+  { name: 'Veronika Vilchik', occ: 'Sommelier', qual: 'CMS', sessions: 8, ig: 'Ferret_and_wine', work: 'Birch Dubai' },
+  { name: 'Petra Kmetec', occ: 'Muggle', qual: 'NONE', sessions: 1, ig: '', work: 'Home' },
+  { name: 'Sandi Bitenc', occ: 'Muggle', qual: 'NONE', sessions: 1, ig: '', work: 'Home' },
+  { name: 'Jessica Kirk', occ: 'Muggle', qual: 'NONE', sessions: 1, ig: 'dubai.foodgirl', work: 'FLOWERBX' },
+  { name: 'Olga Gavrilova', occ: 'Muggle', qual: 'SIS/WSG', sessions: 4, ig: 'olgavrilova_', work: 'N/A' },
+  { name: 'Alexia Miled', occ: 'Muggle', qual: 'NONE', sessions: 1, ig: 'Alexia.rve', work: 'Consultant' },
+  { name: 'Martha Amada', occ: 'Muggle', qual: 'WSET 3', sessions: 4, ig: '', work: 'N/A' },
+  { name: 'Martin Gomez', occ: 'Muggle', qual: 'WSET 3', sessions: 4, ig: '', work: 'N/A' },
+  { name: 'Karim Miled', occ: 'Muggle', qual: 'NONE', sessions: 1, ig: '', work: 'Perenco' },
+  { name: 'Angus Bryan', occ: 'Sommelier', qual: 'WSET 2/CMS prep', sessions: 4, ig: '', work: 'Amazónico' },
+  { name: 'Rik Walia', occ: 'Muggle', qual: 'NONE', sessions: 1, ig: 'London.foodguy', work: 'N/A' },
+  { name: 'Margarita Koroleva', occ: 'Sommelier', qual: 'CMS', sessions: 3, ig: '', work: 'Moonrise' },
+  { name: 'Amit Chavan', occ: 'Educator', qual: 'CMS', sessions: 1, ig: 'Amit_Somm', work: 'Emirates Palace' },
+  { name: 'Zafer Inan', occ: 'Muggle', qual: 'NONE', sessions: 8, ig: 'zfrinan', work: 'Engineering' },
+  { name: 'Christopher DCotta', occ: 'Muggle', qual: 'WSET 3', sessions: 1, ig: 'christopherdcotta', work: 'DFSA' },
+  { name: 'Alena Pavlova', occ: 'Educator', qual: 'Brand amb.', sessions: 10, ig: 'Alio.wine', work: 'Independent' },
+  { name: 'Tim Wassink', occ: 'Muggle', qual: 'WSET 2', sessions: 2, ig: '', work: 'Wine lover' },
+];
+
+const sessions = [
+  { label: 'June 7 — Super Blind (special & region)', count: 6, type: 'blind' },
+  { label: 'June 14 — Masterclass (English Sparkling)', count: 10, type: 'master' },
+  { label: 'June 21 — Super Blind (grape & region)', count: 6, type: 'blind' },
+  { label: 'June 28 — Masterclass (Cabernet Franc)', count: 6, type: 'master' },
+  { label: 'July 5 — Super Blind (grape & spark)', count: 4, type: 'blind' },
+  { label: 'July 12 — Masterclass (Old Vines)', count: 4, type: 'master' },
+  { label: 'July 19 — Super Blind (region & grape)', count: 5, type: 'blind' },
+  { label: 'July 26 — Masterclass (Island Wines)', count: 3, type: 'master' },
+  { label: 'Sept 6 — Super Blind (country & region)', count: 3, type: 'blind' },
+  { label: 'Sept 13 — Masterclass (Sweet Wines)', count: 3, type: 'master' },
+  { label: 'Sept 20 — Super Blind (country & grape)', count: 3, type: 'blind' },
+  { label: 'Sept 27 — Masterclass (Alto Adige)', count: 2, type: 'master' },
+];
+
+const maxSess = Math.max(...sessions.map(s => s.count));
+
+// Session bars
+const sb = document.getElementById('session-bars');
+sessions.forEach(s => {
+  const pct = Math.round((s.count / maxSess) * 100);
+  const color = s.type === 'master' ? '#534AB7' : '#0F6E56';
+  sb.innerHTML += `<div class="session-bar">
+    <span style="font-size:12px; color:var(--color-text-secondary); width:230px; flex-shrink:0;">${s.label}</span>
+    <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${color};"></div></div>
+    <span style="font-size:13px; font-weight:500; color:var(--color-text-primary); width:18px; text-align:right;">${s.count}</span>
+  </div>`;
+});
+
+// Legend for session bars
+sb.innerHTML += `<div style="display:flex; gap:16px; margin-top:10px; font-size:12px; color:var(--color-text-secondary);">
+  <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#534AB7;"></span>Masterclass</span>
+  <span style="display:flex; align-items:center; gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#0F6E56;"></span>Super Blind</span>
+</div>`;
+
+// Avatar colors cycling
+const avColors = [
+  ['#EEEDFE','#3C3489'], ['#E1F5EE','#085041'], ['#FAEEDA','#633806'],
+  ['#FAECE7','#712B13'], ['#E6F1FB','#0C447C'], ['#EAF3DE','#27500A']
+];
+
+function initials(name) {
+  return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+}
+
+function badgeFor(occ) {
+  if (occ === 'Sommelier') return `<span class="badge badge-sommelier">Sommelier</span>`;
+  if (occ === 'Educator') return `<span class="badge badge-educator">Educator</span>`;
+  return `<span class="badge badge-muggle">Muggle</span>`;
+}
+
+function renderPeople(filter) {
+  const pl = document.getElementById('people-list');
+  const filtered = filter === 'all' ? people : people.filter(p =>
+    filter === 'sommelier' ? (p.occ === 'Sommelier' || p.occ === 'Educator') : p.occ === 'Muggle'
+  );
+  pl.innerHTML = filtered.map((p, i) => {
+    const [bg, fg] = avColors[i % avColors.length];
+    return `<div class="person-row">
+      <div class="avatar" style="background:${bg}; color:${fg};">${initials(p.name)}</div>
+      <div style="flex:1; min-width:0;">
+        <div style="font-size:13px; font-weight:500; color:var(--color-text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
+        <div style="font-size:11px; color:var(--color-text-secondary);">${p.work}</div>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:3px;">
+        ${badgeFor(p.occ)}
+        <span style="font-size:11px; color:var(--color-text-secondary);">${p.sessions} session${p.sessions>1?'s':''}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterPeople(f) {
+  ['all','sommelier','muggle'].forEach(id => {
+    document.getElementById('f-'+id).classList.toggle('active', id === f);
+  });
+  renderPeople(f);
+}
+renderPeople('all');
+
+// Power users
+const pu = document.getElementById('power-users');
+const powers = people.filter(p => p.sessions >= 3).sort((a,b) => b.sessions - a.sessions);
+pu.innerHTML = `<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">` +
+powers.map((p,i) => {
+  const [bg, fg] = avColors[i % avColors.length];
+  return `<div style="display:flex; align-items:center; gap:8px; padding:8px; background:var(--color-background-secondary); border-radius:var(--border-radius-md);">
+    <div class="avatar" style="background:${bg}; color:${fg};">${initials(p.name)}</div>
+    <div>
+      <div style="font-size:13px; font-weight:500; color:var(--color-text-primary);">${p.name.split(' ')[0]}</div>
+      <div style="font-size:11px; color:var(--color-text-secondary);">${p.sessions} sessions ${p.ig ? '· @'+p.ig : ''}</div>
+    </div>
+  </div>`;
+}).join('') + `</div>`;
+
+// Donut — occupation
+const occData = { labels: ['Muggle','Sommelier','Educator'], data: [11,4,2] };
+const occColors = ['#0F6E56','#534AB7','#BA7517'];
+new Chart(document.getElementById('occChart'), {
+  type: 'doughnut',
+  data: { labels: occData.labels, datasets: [{ data: occData.data, backgroundColor: occColors, borderWidth: 0 }] },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '65%' }
+});
+const ol = document.getElementById('occ-legend');
+ol.innerHTML = occData.labels.map((l,i) =>
+  `<span style="display:flex; align-items:center; gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:${occColors[i]};"></span>${l} ${occData.data[i]}</span>`
+).join('');
+
+// Bar — qualifications
+const qualColors = ['#888780','#534AB7','#0F6E56','#BA7517'];
+new Chart(document.getElementById('qualChart'), {
+  type: 'bar',
+  data: {
+    labels: ['None','WSET','CMS','Other'],
+    datasets: [{ data: [8,5,3,1], backgroundColor: qualColors, borderWidth: 0 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#888780', font: { size: 11 } }, grid: { display: false } },
+      y: { ticks: { color: '#888780', font: { size: 11 }, stepSize: 1 }, grid: { color: 'rgba(128,128,128,0.1)' }, beginAtZero: true }
+    }
+  }
+});
+</script>
